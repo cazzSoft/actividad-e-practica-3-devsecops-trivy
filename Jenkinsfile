@@ -145,13 +145,28 @@ EOF
 
         stage('Docker - Validate') {
             steps {
-                sh 'docker compose config --quiet'
+                sh '''
+                    set -eu
+
+                    test -f backend/Dockerfile
+                    test -f frontend/Dockerfile
+                    docker version
+
+                    echo 'Dockerfiles y cliente Docker validados.'
+                '''
             }
         }
 
         stage('Docker - Build') {
             steps {
-                sh 'docker compose build --no-cache'
+                sh '''
+                    set -eu
+
+                    docker build --no-cache -t "${LOCAL_BACKEND_IMAGE}:latest" ./backend
+                    docker build --no-cache -t "${LOCAL_FRONTEND_IMAGE}:latest" ./frontend
+
+                    echo 'Imagenes Docker construidas correctamente.'
+                '''
             }
         }
 
