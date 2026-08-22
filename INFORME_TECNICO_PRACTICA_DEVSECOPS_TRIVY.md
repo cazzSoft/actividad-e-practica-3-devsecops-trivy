@@ -96,3 +96,32 @@ Para evitar afectar servicios de practicas anteriores desplegados en Railway, se
 La publicacion en Docker Hub si se mantiene activa, utilizando la credencial existente en Jenkins con ID `dockerhub-cazzsoft`.
 
 Con este ajuste, el alcance de la practica queda centrado en Jenkins, construccion de imagenes Docker, analisis Trivy y publicacion de imagenes en Docker Hub, sin redeploy sobre Railway.
+
+### Evidencia 4. Pipeline final exitoso con publicacion en Docker Hub
+
+**Archivo:** `evidencias/jenkins/04_pipeline_publish_ok_railway_skipped.png`
+
+**Descripcion:**
+En el build `#6` se evidencia la ejecucion completa de las etapas principales del pipeline Jenkins. Las etapas de construccion, verificacion de imagenes, analisis Trivy y publicacion en Docker Hub finalizaron correctamente.
+
+**Resultados destacados:**
+
+- `Docker - Build`: correcto.
+- `Docker - Verify Images`: correcto.
+- `Trivy - Backend Scan`: correcto.
+- `Trivy - Frontend Scan`: correcto.
+- `Evidence - Image Metadata`: correcto.
+- `Docker - Publish`: correcto.
+- `Railway`: omitido para no afectar servicios de practicas anteriores.
+- Resultado final del pipeline: `SUCCESS`.
+
+**Artefactos generados:**
+
+- `backend-trivy.json`
+- `frontend-trivy.json`
+- `backend-image-inspect.json`
+- `frontend-image-inspect.json`
+- `docker-images.txt`
+- `docker-publish-metadata.txt`
+
+Con esta evidencia se cierra la validacion Jenkins + Docker + Trivy, quedando lista la continuacion hacia la guia de despliegue con GitHub Actions, Docker Hub, AWS EC2 y K3s.
