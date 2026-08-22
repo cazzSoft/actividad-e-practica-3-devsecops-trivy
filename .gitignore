@@ -1,0 +1,55 @@
+# Dependencias (Frontend y Backend)
+node_modules/
+actions-runner/
+.pnp
+.pnp.js
+
+# Variables de entorno y llaves secretas
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+
+# Archivos de compilación y estáticos (Builds)
+dist/
+build/
+.next/
+out/
+.nuxt/
+
+# Registros de errores y logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Cobertura de pruebas (Testing)
+coverage/
+.nyc_output/
+
+# Cachés del proyecto
+.cache/
+.turbo/
+.eslintcache
+
+# Archivos del sistema operativo y editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# Artefactos locales de infraestructura y paquetes
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfplan
+tfplan
+*.zip
+.terraform/
+infra/.terraform/
