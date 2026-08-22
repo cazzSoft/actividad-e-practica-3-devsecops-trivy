@@ -33,11 +33,15 @@ Estructura verificada:
 
 **Evidencia:** `evidencias/github/01_repo_k8s_workflows.png`
 
+![Estructura del repositorio con workflows y manifiestos Kubernetes](evidencias/github/01_repo_k8s_workflows.png)
+
 ## 4. Jenkins, Docker y Trivy
 
 ### 4.1 Ejecucion inicial del pipeline Jenkins
 
 **Evidencia:** `evidencias/jenkins/01_pipeline_ejecucion_inicial.png`
+
+![Ejecucion inicial del pipeline Jenkins](evidencias/jenkins/01_pipeline_ejecucion_inicial.png)
 
 Se ejecuto el job `actividad-e-practica-3-devsecops-trivy` en Jenkins. El pipeline obtuvo el codigo desde la rama `main` del repositorio GitHub y ejecuto correctamente las etapas iniciales:
 
@@ -52,6 +56,8 @@ Se ejecuto el job `actividad-e-practica-3-devsecops-trivy` en Jenkins. El pipeli
 ### 4.2 Incidencia Docker Compose
 
 **Evidencia:** `evidencias/jenkins/02_error_docker_compose_validate.png`
+
+![Error en Docker Validate por ausencia de Docker Compose](evidencias/jenkins/02_error_docker_compose_validate.png)
 
 Durante el build `#4`, la etapa `Docker - Validate` fallo al ejecutar:
 
@@ -71,6 +77,8 @@ Se valido que el contenedor Jenkins tenia Docker instalado, pero no tenia dispon
 ### 4.3 Analisis Trivy ejecutado correctamente
 
 **Evidencia:** `evidencias/jenkins/03_pipeline_trivy_ok_publish_error.png`
+
+![Trivy ejecutado correctamente con fallo posterior en publicacion](evidencias/jenkins/03_pipeline_trivy_ok_publish_error.png)
 
 En el build `#5`, las etapas principales de Docker y Trivy finalizaron correctamente:
 
@@ -97,6 +105,8 @@ ERROR: Could not find credentials entry with ID 'jenkins-u3'
 ### 4.4 Correccion de credencial Docker Hub y ejecucion final Jenkins
 
 **Evidencia:** `evidencias/jenkins/04_pipeline_publish_ok_railway_skipped.png`
+
+![Pipeline Jenkins exitoso con publicacion en Docker Hub](evidencias/jenkins/04_pipeline_publish_ok_railway_skipped.png)
 
 Se ajusto el `Jenkinsfile` para utilizar la credencial existente en Jenkins:
 
@@ -126,6 +136,8 @@ El build `#6` finalizo en estado `SUCCESS`, completando:
 
 **Evidencia:** `evidencias/dockerhub/01_backend_tags_publicados.png`
 
+![Imagen backend publicada en Docker Hub](evidencias/dockerhub/01_backend_tags_publicados.png)
+
 Se verifico en Docker Hub la publicacion de la imagen:
 
 ```text
@@ -137,6 +149,8 @@ La imagen cuenta con tags generados por el pipeline, incluyendo el tag asociado 
 ### 5.2 Imagen frontend publicada
 
 **Evidencia:** `evidencias/dockerhub/02_frontend_tags_publicados.png`
+
+![Imagen frontend publicada en Docker Hub](evidencias/dockerhub/02_frontend_tags_publicados.png)
 
 Se verifico en Docker Hub la publicacion de la imagen:
 
@@ -167,7 +181,11 @@ DOCKERHUB_USERNAME = cazzsoft
 **Evidencias:**
 
 - `evidencias/github/03_secret_dockerhub_token.png`
+
+![Secret DOCKERHUB_TOKEN configurado en GitHub Actions](evidencias/github/03_secret_dockerhub_token.png)
 - `evidencias/github/04_variable_dockerhub_username.png`
+
+![Variable DOCKERHUB_USERNAME configurada en GitHub Actions](evidencias/github/04_variable_dockerhub_username.png)
 
 ### 6.2 Runner self-hosted
 
@@ -186,14 +204,22 @@ self-hosted, Linux, X64, aws-k3s
 **Evidencias:**
 
 - `evidencias/aws/06_runner_servicio_activo.png`
+
+![Runner self-hosted activo como servicio en EC2](evidencias/aws/06_runner_servicio_activo.png)
 - `evidencias/github/05_runner_idle.png`
+
+![Runner aws-k3s disponible en GitHub Actions](evidencias/github/05_runner_idle.png)
 
 ### 6.3 Ejecucion del workflow Kubernetes
 
 **Evidencias:**
 
 - `evidencias/github/06_workflow_kubernetes_en_progreso.png`
+
+![Workflow Kubernetes en progreso](evidencias/github/06_workflow_kubernetes_en_progreso.png)
 - `evidencias/github/07_workflow_kubernetes_success.png`
+
+![Workflow Kubernetes finalizado correctamente](evidencias/github/07_workflow_kubernetes_success.png)
 
 Se ejecuto manualmente el workflow `Deploy Kubernetes AWS`, usando `workflow_dispatch` sobre la rama `main`.
 
@@ -219,11 +245,17 @@ Configuracion utilizada:
 **Evidencias:**
 
 - `evidencias/aws/01_ec2_instancia_en_ejecucion.png`
+
+![Instancia EC2 en ejecucion](evidencias/aws/01_ec2_instancia_en_ejecucion.png)
 - `evidencias/aws/02_ec2_comprobaciones_ok.png`
+
+![Comprobaciones EC2 superadas](evidencias/aws/02_ec2_comprobaciones_ok.png)
 
 ### 7.2 Instalacion de K3s
 
 **Evidencia:** `evidencias/aws/03_k3s_service_running.png`
+
+![Servicio K3s activo en EC2](evidencias/aws/03_k3s_service_running.png)
 
 Se instalo K3s en la instancia EC2. El servicio fue validado mediante:
 
@@ -241,6 +273,8 @@ active (running)
 
 **Evidencia:** `evidencias/aws/04_k3s_node_pods_ready.png`
 
+![Nodo K3s Ready y pods del sistema ejecutandose](evidencias/aws/04_k3s_node_pods_ready.png)
+
 Se valido el nodo y los pods base con:
 
 ```bash
@@ -253,6 +287,8 @@ El nodo aparece en estado `Ready` con rol `control-plane`.
 ### 7.4 Kubeconfig para usuario ubuntu
 
 **Evidencia:** `evidencias/aws/05_kubectl_usuario_ubuntu_ready.png`
+
+![Kubectl funcionando con usuario ubuntu](evidencias/aws/05_kubectl_usuario_ubuntu_ready.png)
 
 Se configuro el archivo:
 
@@ -274,6 +310,8 @@ Con esto, el usuario `ubuntu` puede ejecutar `kubectl` sin `sudo`, requisito nec
 
 **Evidencia:** `evidencias/aws/08_k8s_pods_services_ingress_curl.png`
 
+![Recursos Kubernetes, servicios, ingress y curl validados](evidencias/aws/08_k8s_pods_services_ingress_curl.png)
+
 Se verificaron los recursos desplegados en el namespace `devops-lab`:
 
 ```bash
@@ -294,6 +332,8 @@ Resultados observados:
 **Evidencias:**
 
 - `evidencias/aws/07_aplicacion_web_publica.png`
+
+![Aplicacion web publicada en AWS](evidencias/aws/07_aplicacion_web_publica.png)
 - `evidencias/aws/08_k8s_pods_services_ingress_curl.png`
 
 Se valido el acceso local en la instancia:
@@ -333,4 +373,6 @@ La practica fue completada correctamente. El informe evidencia tanto el analisis
 La practica permitio comprobar un flujo completo de DevSecOps y CI/CD, iniciando con el analisis de vulnerabilidades mediante Trivy y finalizando con el despliegue automatizado de la aplicacion en AWS K3s. La separacion entre Jenkins, Docker Hub, GitHub Actions y K3s permitio validar distintas etapas del ciclo de vida DevOps.
 
 Se identificaron y corrigieron incidencias de entorno, como la ausencia de Docker Compose en Jenkins y la diferencia entre credenciales configuradas y credenciales esperadas por el pipeline. Finalmente, el despliegue en AWS K3s fue exitoso y la aplicacion quedo disponible desde internet.
+
+
 
