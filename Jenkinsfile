@@ -22,6 +22,7 @@ pipeline {
         RAILWAY_ENVIRONMENT_ID = 'efdd7c0a-1fa7-4d3a-89d0-f7647e948c4c'
         RAILWAY_BACKEND_SERVICE_ID = '5c52cc15-b575-488a-969e-c35bacee17c0'
         RAILWAY_FRONTEND_SERVICE_ID = '4c049b51-26d5-4b82-bf0b-2534c80c888c'
+        SKIP_RAILWAY_DEPLOY = 'true'
     }
 
     stages {
@@ -286,7 +287,7 @@ EOF
             steps {
                 withCredentials([
                     usernamePassword(
-                        credentialsId: 'jenkins-u3',
+                        credentialsId: 'dockerhub-cazzsoft',
                         usernameVariable: 'DOCKER_USER',
                         passwordVariable: 'DOCKER_PASS'
                     )
@@ -349,7 +350,7 @@ EOF
         stage('Railway - CLI Check') {
             when {
                 expression {
-                    return env.IS_MAIN == 'true'
+                    return env.IS_MAIN == 'true' && env.SKIP_RAILWAY_DEPLOY != 'true'
                 }
             }
 
@@ -365,7 +366,7 @@ EOF
         stage('Railway - Redeploy Backend') {
             when {
                 expression {
-                    return env.IS_MAIN == 'true'
+                    return env.IS_MAIN == 'true' && env.SKIP_RAILWAY_DEPLOY != 'true'
                 }
             }
 
@@ -396,7 +397,7 @@ EOF
         stage('Railway - Redeploy Frontend') {
             when {
                 expression {
-                    return env.IS_MAIN == 'true'
+                    return env.IS_MAIN == 'true' && env.SKIP_RAILWAY_DEPLOY != 'true'
                 }
             }
 
@@ -437,7 +438,7 @@ EOF
 
             script {
                 if (env.IS_MAIN == 'true') {
-                    echo 'Imágenes publicadas en Docker Hub y redeploy solicitado en Railway.'
+                    echo 'Imagenes publicadas en Docker Hub. Redeploy Railway omitido para no afectar practicas anteriores.'
                 } else {
                     echo 'Build de rama no-main: pruebas y construcción ejecutadas; publicación y despliegue omitidos.'
                 }
