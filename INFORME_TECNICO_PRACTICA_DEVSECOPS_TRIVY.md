@@ -1,19 +1,45 @@
-# Informe Tecnico - Practica DevSecOps con Jenkins y Trivy
+# Informe Tecnico - Practica DevSecOps, CI/CD y Despliegue en AWS K3s
 
 ## 1. Objetivo
 
-Documentar la ejecucion del pipeline Jenkins configurado para el proyecto de practica, incluyendo construccion de backend y frontend, validacion Docker, analisis de vulnerabilidades con Trivy y generacion de evidencias tecnicas.
+Documentar la ejecucion de la practica DevSecOps y CI/CD realizada sobre el proyecto `actividad-e-practica-3-devsecops-trivy`, integrando Jenkins, Trivy, Docker Hub, GitHub Actions, AWS EC2 y K3s.
 
-## 2. Evidencias recopiladas
+El objetivo tecnico fue construir las imagenes Docker del backend y frontend, analizarlas con Trivy, publicarlas en Docker Hub y desplegar la aplicacion en un cluster K3s instalado sobre una instancia EC2 de AWS.
 
-### Evidencia 1. Ejecucion inicial del pipeline Jenkins
+## 2. Alcance de la practica
 
-**Archivo:** `evidencias/jenkins/01_pipeline_ejecucion_inicial.png`
+La practica se desarrollo en dos bloques principales:
 
-**Descripcion:**
-Se ejecuto el job `actividad-e-practica-3-devsecops-trivy` desde Jenkins. El pipeline tomo el codigo fuente desde la rama `main` del repositorio GitHub y comenzo la ejecucion de las etapas definidas en el `Jenkinsfile`.
+- Pipeline Jenkins para construccion, validacion Docker, analisis Trivy, generacion de reportes y publicacion de imagenes.
+- Pipeline GitHub Actions para construir/publicar imagenes y desplegar los manifiestos Kubernetes en AWS K3s mediante un runner self-hosted.
 
-En la captura se observa que finalizaron correctamente las siguientes etapas iniciales:
+Se decidio no ejecutar redeploy sobre Railway para no afectar servicios de practicas anteriores. Railway no forma parte del flujo de la guia AWS K3s.
+
+## 3. Repositorio y configuracion base
+
+Repositorio utilizado:
+
+```text
+https://github.com/cazzSoft/actividad-e-practica-3-devsecops-trivy
+```
+
+Estructura verificada:
+
+- `.github/workflows/kubernetes.yml`
+- `backend/Dockerfile`
+- `frontend/Dockerfile`
+- `k8s/`
+- `Jenkinsfile`
+
+**Evidencia:** `evidencias/github/01_repo_k8s_workflows.png`
+
+## 4. Jenkins, Docker y Trivy
+
+### 4.1 Ejecucion inicial del pipeline Jenkins
+
+**Evidencia:** `evidencias/jenkins/01_pipeline_ejecucion_inicial.png`
+
+Se ejecuto el job `actividad-e-practica-3-devsecops-trivy` en Jenkins. El pipeline obtuvo el codigo desde la rama `main` del repositorio GitHub y ejecuto correctamente las etapas iniciales:
 
 - `Checkout`
 - `Metadata`
@@ -23,45 +49,30 @@ En la captura se observa que finalizaron correctamente las siguientes etapas ini
 - `Frontend - Install`
 - `Frontend - Lint`
 
-Tambien se observa el commit ejecutado: `9bd3488`, con la condicion `main=true`.
+### 4.2 Incidencia Docker Compose
 
-## 3. Pendiente de evidencia
+**Evidencia:** `evidencias/jenkins/02_error_docker_compose_validate.png`
 
-- Resultado final del pipeline completo.
-- Etapa `Docker - Build`.
-- Etapa `Docker - Verify Images`.
-- Etapa `Trivy - Backend Scan`.
-- Etapa `Trivy - Frontend Scan`.
-- Artefactos archivados en Jenkins.
+Durante el build `#4`, la etapa `Docker - Validate` fallo al ejecutar:
 
-### Evidencia 2. Error en etapa Docker - Validate
+```text
+docker compose config --quiet
+```
 
-**Archivo:** `evidencias/jenkins/02_error_docker_compose_validate.png`
-
-**Descripcion:**
-Durante la ejecucion del build `#4`, el pipeline fallo en la etapa `Docker - Validate` al ejecutar el comando `docker compose config --quiet`.
-
-El mensaje reportado por Jenkins fue:
+El mensaje fue:
 
 ```text
 unknown flag: --quiet
 See 'docker --help'.
 ```
 
-**Analisis tecnico:**
-El contenedor Jenkins tiene instalado el cliente Docker, pero no cuenta con el plugin `docker compose` ni con el binario clasico `docker-compose`. Por esta razon, Jenkins no pudo ejecutar la validacion basada en Docker Compose.
+Se valido que el contenedor Jenkins tenia Docker instalado, pero no tenia disponible `docker compose` ni `docker-compose`. Como accion correctiva, se ajusto el `Jenkinsfile` para construir las imagenes mediante `docker build` directo.
 
-**Accion correctiva:**
-Se ajusto el `Jenkinsfile` para validar la existencia de los Dockerfile y la disponibilidad del cliente Docker, y para construir las imagenes mediante `docker build` directo, manteniendo los nombres de imagen requeridos por las etapas posteriores de Trivy.
+### 4.3 Analisis Trivy ejecutado correctamente
 
-### Evidencia 3. Ejecucion exitosa de Docker y Trivy con fallo posterior en publicacion
+**Evidencia:** `evidencias/jenkins/03_pipeline_trivy_ok_publish_error.png`
 
-**Archivo:** `evidencias/jenkins/03_pipeline_trivy_ok_publish_error.png`
-
-**Descripcion:**
-En el build `#5` se observa que el pipeline ejecuto correctamente las etapas principales de la practica: instalacion, pruebas, construccion frontend, validacion Docker, construccion de imagenes, verificacion de imagenes, analisis Trivy para backend y analisis Trivy para frontend.
-
-Las etapas completadas correctamente incluyen:
+En el build `#5`, las etapas principales de Docker y Trivy finalizaron correctamente:
 
 - `Docker - Build`
 - `Docker - Verify Images`
@@ -69,8 +80,7 @@ Las etapas completadas correctamente incluyen:
 - `Trivy - Frontend Scan`
 - `Evidence - Image Metadata`
 
-**Resultado tecnico:**
-Los reportes de Trivy fueron generados y archivados como artefactos de Jenkins:
+Se generaron reportes JSON para backend y frontend:
 
 - `backend-trivy.json`
 - `frontend-trivy.json`
@@ -78,50 +88,248 @@ Los reportes de Trivy fueron generados y archivados como artefactos de Jenkins:
 - `frontend-image-inspect.json`
 - `docker-images.txt`
 
-**Observacion:**
-El pipeline fallo posteriormente en la etapa `Docker - Publish` debido a que no existe en Jenkins la credencial requerida con ID `jenkins-u3`.
-
-Mensaje identificado:
+Posteriormente fallo `Docker - Publish` porque Jenkins buscaba la credencial `jenkins-u3`, inexistente en el servidor:
 
 ```text
 ERROR: Could not find credentials entry with ID 'jenkins-u3'
 ```
 
-Este fallo corresponde a una configuracion externa de credenciales para publicar en Docker Hub y no afecta la evidencia principal de analisis de vulnerabilidades con Trivy, ya que los escaneos se ejecutaron correctamente antes de la publicacion.
+### 4.4 Correccion de credencial Docker Hub y ejecucion final Jenkins
 
-### Ajuste de alcance: Railway no se modifica
+**Evidencia:** `evidencias/jenkins/04_pipeline_publish_ok_railway_skipped.png`
 
-Para evitar afectar servicios de practicas anteriores desplegados en Railway, se decidio mantener Railway sin cambios. El pipeline conserva las etapas de Railway, pero quedan omitidas mediante la variable `SKIP_RAILWAY_DEPLOY = 'true'`.
+Se ajusto el `Jenkinsfile` para utilizar la credencial existente en Jenkins:
 
-La publicacion en Docker Hub si se mantiene activa, utilizando la credencial existente en Jenkins con ID `dockerhub-cazzsoft`.
+```text
+dockerhub-cazzsoft
+```
 
-Con este ajuste, el alcance de la practica queda centrado en Jenkins, construccion de imagenes Docker, analisis Trivy y publicacion de imagenes en Docker Hub, sin redeploy sobre Railway.
+Tambien se configuro la variable:
 
-### Evidencia 4. Pipeline final exitoso con publicacion en Docker Hub
+```text
+SKIP_RAILWAY_DEPLOY = 'true'
+```
 
-**Archivo:** `evidencias/jenkins/04_pipeline_publish_ok_railway_skipped.png`
+Con esto se evito modificar servicios Railway de practicas anteriores.
 
-**Descripcion:**
-En el build `#6` se evidencia la ejecucion completa de las etapas principales del pipeline Jenkins. Las etapas de construccion, verificacion de imagenes, analisis Trivy y publicacion en Docker Hub finalizaron correctamente.
+El build `#6` finalizo en estado `SUCCESS`, completando:
 
-**Resultados destacados:**
+- Construccion de imagenes Docker.
+- Analisis Trivy para backend y frontend.
+- Generacion de artefactos.
+- Publicacion en Docker Hub.
+- Omision controlada de Railway.
 
-- `Docker - Build`: correcto.
-- `Docker - Verify Images`: correcto.
-- `Trivy - Backend Scan`: correcto.
-- `Trivy - Frontend Scan`: correcto.
-- `Evidence - Image Metadata`: correcto.
-- `Docker - Publish`: correcto.
-- `Railway`: omitido para no afectar servicios de practicas anteriores.
-- Resultado final del pipeline: `SUCCESS`.
+## 5. Docker Hub
 
-**Artefactos generados:**
+### 5.1 Imagen backend publicada
 
-- `backend-trivy.json`
-- `frontend-trivy.json`
-- `backend-image-inspect.json`
-- `frontend-image-inspect.json`
-- `docker-images.txt`
-- `docker-publish-metadata.txt`
+**Evidencia:** `evidencias/dockerhub/01_backend_tags_publicados.png`
 
-Con esta evidencia se cierra la validacion Jenkins + Docker + Trivy, quedando lista la continuacion hacia la guia de despliegue con GitHub Actions, Docker Hub, AWS EC2 y K3s.
+Se verifico en Docker Hub la publicacion de la imagen:
+
+```text
+cazzsoft/proyecto-integrador-backend
+```
+
+La imagen cuenta con tags generados por el pipeline, incluyendo el tag asociado al commit de GitHub Actions.
+
+### 5.2 Imagen frontend publicada
+
+**Evidencia:** `evidencias/dockerhub/02_frontend_tags_publicados.png`
+
+Se verifico en Docker Hub la publicacion de la imagen:
+
+```text
+cazzsoft/proyecto-integrador-frontend
+```
+
+La imagen cuenta con tags publicados por Jenkins y GitHub Actions.
+
+## 6. GitHub Actions
+
+### 6.1 Secrets y variables
+
+Se configuraron los valores requeridos para que GitHub Actions pueda autenticarse en Docker Hub.
+
+**Secret:**
+
+```text
+DOCKERHUB_TOKEN
+```
+
+**Variable:**
+
+```text
+DOCKERHUB_USERNAME = cazzsoft
+```
+
+**Evidencias:**
+
+- `evidencias/github/03_secret_dockerhub_token.png`
+- `evidencias/github/04_variable_dockerhub_username.png`
+
+### 6.2 Runner self-hosted
+
+Se instalo un runner self-hosted en la instancia EC2 y se registro en GitHub con el nombre:
+
+```text
+aws-k3s
+```
+
+Labels registrados:
+
+```text
+self-hosted, Linux, X64, aws-k3s
+```
+
+**Evidencias:**
+
+- `evidencias/aws/06_runner_servicio_activo.png`
+- `evidencias/github/05_runner_idle.png`
+
+### 6.3 Ejecucion del workflow Kubernetes
+
+**Evidencias:**
+
+- `evidencias/github/06_workflow_kubernetes_en_progreso.png`
+- `evidencias/github/07_workflow_kubernetes_success.png`
+
+Se ejecuto manualmente el workflow `Deploy Kubernetes AWS`, usando `workflow_dispatch` sobre la rama `main`.
+
+El workflow completo finalizo en estado `Success`, completando los jobs:
+
+- `build-and-push`
+- `deploy`
+
+## 7. AWS EC2 y K3s
+
+### 7.1 Instancia EC2
+
+Se creo una instancia EC2 en AWS para alojar el cluster K3s.
+
+Configuracion utilizada:
+
+- Ubuntu Server.
+- Tipo de instancia `t3.small`.
+- Almacenamiento `25 GiB gp3`.
+- Puerto `80` habilitado para HTTP.
+- Puerto `22` utilizado para administracion por consola/SSH.
+
+**Evidencias:**
+
+- `evidencias/aws/01_ec2_instancia_en_ejecucion.png`
+- `evidencias/aws/02_ec2_comprobaciones_ok.png`
+
+### 7.2 Instalacion de K3s
+
+**Evidencia:** `evidencias/aws/03_k3s_service_running.png`
+
+Se instalo K3s en la instancia EC2. El servicio fue validado mediante:
+
+```bash
+sudo systemctl status k3s --no-pager
+```
+
+Resultado observado:
+
+```text
+active (running)
+```
+
+### 7.3 Validacion del cluster Kubernetes
+
+**Evidencia:** `evidencias/aws/04_k3s_node_pods_ready.png`
+
+Se valido el nodo y los pods base con:
+
+```bash
+sudo kubectl get nodes
+sudo kubectl get pods -A
+```
+
+El nodo aparece en estado `Ready` con rol `control-plane`.
+
+### 7.4 Kubeconfig para usuario ubuntu
+
+**Evidencia:** `evidencias/aws/05_kubectl_usuario_ubuntu_ready.png`
+
+Se configuro el archivo:
+
+```text
+/home/ubuntu/.kube/config
+```
+
+Tambien se exporto la variable:
+
+```bash
+KUBECONFIG=/home/ubuntu/.kube/config
+```
+
+Con esto, el usuario `ubuntu` puede ejecutar `kubectl` sin `sudo`, requisito necesario para que el runner self-hosted despliegue sobre K3s.
+
+## 8. Despliegue Kubernetes
+
+### 8.1 Recursos desplegados
+
+**Evidencia:** `evidencias/aws/08_k8s_pods_services_ingress_curl.png`
+
+Se verificaron los recursos desplegados en el namespace `devops-lab`:
+
+```bash
+kubectl get pods -n devops-lab
+kubectl get services -n devops-lab
+kubectl get ingress -n devops-lab
+```
+
+Resultados observados:
+
+- Pods de PostgreSQL, backend y frontend en estado `Running`.
+- Job `prisma-db-push` en estado `Completed`.
+- Servicios `postgres`, `practica-backend` y `practica-frontend` creados.
+- Ingress `practica-ingress` publicado por Traefik en puerto `80`.
+
+### 8.2 Validacion HTTP y API
+
+**Evidencias:**
+
+- `evidencias/aws/07_aplicacion_web_publica.png`
+- `evidencias/aws/08_k8s_pods_services_ingress_curl.png`
+
+Se valido el acceso local en la instancia:
+
+```bash
+curl -I http://localhost
+curl http://localhost/api/users
+```
+
+Resultado:
+
+- `HTTP/1.1 200 OK` para el frontend.
+- Respuesta JSON para el endpoint `/api/users`.
+
+Tambien se valido el acceso publico desde navegador mediante la IP publica de la instancia EC2:
+
+```text
+http://3.135.235.166
+```
+
+La interfaz `Gestion de Usuarios` cargo correctamente.
+
+## 9. Resultado final
+
+La practica fue completada correctamente. Se logro integrar el ciclo CI/CD con herramientas DevOps y DevSecOps:
+
+- Jenkins ejecuto build, pruebas, Docker, Trivy y publicacion en Docker Hub.
+- Trivy genero reportes de vulnerabilidades para backend y frontend.
+- Docker Hub recibio las imagenes del proyecto.
+- GitHub Actions construyo y publico imagenes usando secrets/variables del repositorio.
+- Un runner self-hosted en AWS ejecuto el despliegue sobre K3s.
+- Kubernetes desplego PostgreSQL, backend, frontend e ingress.
+- La aplicacion quedo accesible publicamente por HTTP.
+
+## 10. Conclusiones
+
+La practica permitio comprobar un flujo completo de DevSecOps y CI/CD, desde la construccion y analisis de imagenes hasta el despliegue automatizado en Kubernetes. La separacion entre Jenkins, Docker Hub, GitHub Actions y K3s permitio validar distintas etapas del ciclo de vida DevOps.
+
+Se identificaron y corrigieron incidencias de entorno, como la ausencia de Docker Compose en Jenkins y la diferencia entre credenciales configuradas y credenciales esperadas por el pipeline. Finalmente, el despliegue en AWS K3s fue exitoso y la aplicacion quedo disponible desde internet.
