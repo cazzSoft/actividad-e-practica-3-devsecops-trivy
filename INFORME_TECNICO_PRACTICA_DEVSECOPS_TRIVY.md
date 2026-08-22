@@ -1,17 +1,17 @@
-# Informe Tecnico - Practica DevSecOps, CI/CD y Despliegue en AWS K3s
+# Informe Tecnico - Analisis Trivy y Despliegue CI/CD en AWS K3s
 
 ## 1. Objetivo
 
-Documentar la ejecucion de la practica DevSecOps y CI/CD realizada sobre el proyecto `actividad-e-practica-3-devsecops-trivy`, integrando Jenkins, Trivy, Docker Hub, GitHub Actions, AWS EC2 y K3s.
+Documentar la ejecucion de la practica realizada sobre el proyecto `actividad-e-practica-3-devsecops-trivy`, considerando dos componentes principales: el analisis de vulnerabilidades con Trivy y el despliegue automatizado en AWS mediante GitHub Actions y K3s.
 
-El objetivo tecnico fue construir las imagenes Docker del backend y frontend, analizarlas con Trivy, publicarlas en Docker Hub y desplegar la aplicacion en un cluster K3s instalado sobre una instancia EC2 de AWS.
+El objetivo tecnico fue construir las imagenes Docker del backend y frontend, ejecutar escaneos de seguridad con Trivy, publicar las imagenes en Docker Hub y desplegar la aplicacion en un cluster K3s instalado sobre una instancia EC2 de AWS.
 
 ## 2. Alcance de la practica
 
-La practica se desarrollo en dos bloques principales:
+La practica se desarrollo en dos bloques principales, ambos documentados con evidencias:
 
-- Pipeline Jenkins para construccion, validacion Docker, analisis Trivy, generacion de reportes y publicacion de imagenes.
-- Pipeline GitHub Actions para construir/publicar imagenes y desplegar los manifiestos Kubernetes en AWS K3s mediante un runner self-hosted.
+- Analisis DevSecOps con Jenkins y Trivy: construccion de imagenes, validacion Docker, escaneo de vulnerabilidades, generacion de reportes y publicacion en Docker Hub.
+- Despliegue CI/CD en AWS K3s: ejecucion de GitHub Actions, uso de runner self-hosted en EC2, aplicacion de manifiestos Kubernetes y validacion de la aplicacion publicada.
 
 Se decidio no ejecutar redeploy sobre Railway para no afectar servicios de practicas anteriores. Railway no forma parte del flujo de la guia AWS K3s.
 
@@ -318,7 +318,7 @@ La interfaz `Gestion de Usuarios` cargo correctamente.
 
 ## 9. Resultado final
 
-La practica fue completada correctamente. Se logro integrar el ciclo CI/CD con herramientas DevOps y DevSecOps:
+La practica fue completada correctamente. El informe evidencia tanto el analisis de seguridad con Trivy como el despliegue de la aplicacion en AWS K3s:
 
 - Jenkins ejecuto build, pruebas, Docker, Trivy y publicacion en Docker Hub.
 - Trivy genero reportes de vulnerabilidades para backend y frontend.
@@ -330,6 +330,7 @@ La practica fue completada correctamente. Se logro integrar el ciclo CI/CD con h
 
 ## 10. Conclusiones
 
-La practica permitio comprobar un flujo completo de DevSecOps y CI/CD, desde la construccion y analisis de imagenes hasta el despliegue automatizado en Kubernetes. La separacion entre Jenkins, Docker Hub, GitHub Actions y K3s permitio validar distintas etapas del ciclo de vida DevOps.
+La practica permitio comprobar un flujo completo de DevSecOps y CI/CD, iniciando con el analisis de vulnerabilidades mediante Trivy y finalizando con el despliegue automatizado de la aplicacion en AWS K3s. La separacion entre Jenkins, Docker Hub, GitHub Actions y K3s permitio validar distintas etapas del ciclo de vida DevOps.
 
 Se identificaron y corrigieron incidencias de entorno, como la ausencia de Docker Compose en Jenkins y la diferencia entre credenciales configuradas y credenciales esperadas por el pipeline. Finalmente, el despliegue en AWS K3s fue exitoso y la aplicacion quedo disponible desde internet.
+
